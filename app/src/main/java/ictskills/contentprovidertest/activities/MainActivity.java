@@ -3,6 +3,7 @@ package ictskills.contentprovidertest.activities;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ import android.widget.Toast;
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener
 {
+  private final String TAG = "MainActivity";
+
   private Button contentProvider;
 
   @Override
@@ -50,27 +53,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // Query the database
     List<Residence> residences = new ArrayList<Residence>();
-    Cursor cursor = getContentResolver().query(ResidenceContract.CONTENT_URI, null, null, null, null);
+    try {
+      Cursor cursor = getContentResolver().query(ResidenceContract.CONTENT_URI, null, null, null, null);
 
-    if (cursor.moveToFirst()) {
-      int columnIndex = 1; // skip column 0, the _id
-      do {
-        Residence residence = new Residence();
+      if (cursor.moveToFirst()) {
+        int columnIndex = 1; // skip column 0, the _id
+        do {
+          Residence residence = new Residence();
 
-        residence.uuid = UUID.fromString(cursor.getString(columnIndex++));
-        residence.geolocation = cursor.getString(columnIndex++);
-        residence.date = new Date(Long.parseLong(cursor.getString(columnIndex++)));
-        residence.rented = cursor.getString(columnIndex++) == "yes" ? true : false;
-        residence.tenant = cursor.getString(columnIndex++);
-        residence.zoom = Double.parseDouble(cursor.getString(columnIndex++));
-        residence.photo = cursor.getString(columnIndex++);
+          residence.uuid = UUID.fromString(cursor.getString(columnIndex++));
+          residence.geolocation = cursor.getString(columnIndex++);
+          residence.date = new Date(Long.parseLong(cursor.getString(columnIndex++)));
+          residence.rented = cursor.getString(columnIndex++) == "yes" ? true : false;
+          residence.tenant = cursor.getString(columnIndex++);
+          residence.zoom = Double.parseDouble(cursor.getString(columnIndex++));
+          residence.photo = cursor.getString(columnIndex++);
 
-        columnIndex = 1;
+          columnIndex = 1;
 
-        residences.add(residence);
-      } while (cursor.moveToNext());
+          residences.add(residence);
+        } while (cursor.moveToNext());
+      }
+      cursor.close();
+    } catch (Exception e)
+    {
+      Log.d(TAG, "MySQLite database query failed");
     }
-    cursor.close();
     Toast.makeText(this, "Retrieved MyRentSQLite Residence array, size: " + residences.size(), Toast.LENGTH_SHORT).show();
   }
 }
